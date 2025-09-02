@@ -1,5 +1,3 @@
-# audio_player.py
-
 import sounddevice as sd
 
 def play_audio_data(audio_queue):
@@ -15,10 +13,10 @@ def play_audio_data(audio_queue):
                 print("音频播放器收到结束信号，即将关闭。")
                 break
             
-            print("[DEBUG-PLAYER] Playing audio...") # <--- 添加这行
+            print("[DEBUG-PLAYER] Playing audio...")
             sd.play(audio_data, samplerate=24000)
             sd.wait()
-            print("[DEBUG-PLAYER] Finished playing audio.") # <--- 添加这行
+            print("[DEBUG-PLAYER] Finished playing audio.")
         except Exception as e:
             print(f"播放音频时出错: {e}")
             break

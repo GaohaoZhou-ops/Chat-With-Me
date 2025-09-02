@@ -1,11 +1,9 @@
-# main.py
-
 import multiprocessing as mp
 import sys
 from ollama_client import stream_ollama_response, stream_openai_response 
 from tts_converter import convert_text_to_audio
 from audio_player import play_audio_data
-from config_loader import config # <--- 导入配置
+from config_loader import config
 
 def main_input_loop(input_queue):
     """

@@ -1,5 +1,3 @@
-# config_loader.py
-
 import yaml
 from pathlib import Path
 
@@ -20,5 +18,4 @@ def load_config():
         except yaml.YAMLError as e:
             raise ValueError(f"解析 config.yaml 时出错: {e}")
 
-# 加载配置，以便其他模块可以直接导入这个 'config' 对象
 config = load_config()

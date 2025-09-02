@@ -1,5 +1,3 @@
-# input_handler.py
-
 import sys
 
 def capture_input(input_queue):

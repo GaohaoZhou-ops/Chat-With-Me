@@ -1,5 +1,3 @@
-# tts_converter.py
-
 import ChatTTS
 import numpy as np
 import os
@@ -8,9 +6,8 @@ import concurrent.futures
 from collections import deque
 import time
 from config_loader import config
-import pickle # <--- 1. 导入 pickle 库
+import pickle
 
-# --- 配置从 config 文件读取 ---
 NUM_WORKERS = 2 
 MODEL_PATH = config['chat_tts_path']
 SPEAKER_EMB_PATH = config['speaker_embedding_path']
@@ -47,7 +44,6 @@ def convert_text_to_audio(text_queue, audio_queue):
 
     # 使用 pickle 加载或生成音色
     if os.path.exists(SPEAKER_EMB_PATH):
-        # <--- 2. 使用 pickle.load 加载音色对象 ---
         try:
             with open(SPEAKER_EMB_PATH, 'rb') as f:
                 spk_emb = pickle.load(f)
@@ -61,7 +57,6 @@ def convert_text_to_audio(text_queue, audio_queue):
     if spk_emb is None:
         print("未找到或加载音色文件失败，正在生成随机音色...")
         spk_emb = chat.sample_random_speaker()
-        # <--- 3. 使用 pickle.dump 保存音色对象 ---
         with open(SPEAKER_EMB_PATH, 'wb') as f:
             pickle.dump(spk_emb, f)
         print(f"新音色已生成并保存到 '{SPEAKER_EMB_PATH}'。")

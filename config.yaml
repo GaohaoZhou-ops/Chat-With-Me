@@ -2,47 +2,27 @@
 # 项目总配置文件
 # ===================================================================
 
-# -----------------
-# 全局模型设置
-# -----------------
-# 是否使用在线模型 (true: 使用在线OpenAI协议模型, false: 使用本地Ollama)
-use_online_model: true
+use_online_model: true  # 是否使用在线模型 (true: 使用在线OpenAI协议模型, false: 使用本地Ollama)
 
-# -----------------
-# 在线模型配置 (当 use_online_model: true 时生效)
-# -----------------
 online_model:
-  # 模型名称, 例如 "deepseek-chat"
   name: "deepseek-chat"
-  # API Key, 请替换为你的密钥
-  api_key: "sk-8352c67e63394c44b7401ea73d933d07" # 请务必替换为你的有效密钥
+  api_key: "sk-8352c67e63394c44b7401ea73d933d07"
   base_url: "https://api.deepseek.com"
 
-# -----------------
-# 本地Ollama模型配置 (当 use_online_model: false 时生效)
-# -----------------
 local_model:
-  # 本地Ollama模型的名称, 例如 "qwen2:7b"
-  name: "qwen2:7b"
+  name: "qwen3:14b" # 本地Ollama模型的名称, 例如 "qwen2:7b"
 
-# -----------------
-# ChatTTS 音频配置
-# -----------------
-# ChatTTS 模型文件所在的本地路径
-chat_tts_path: "/Users/gaohao/Desktop/ChatTTS" # 请修改为你的实际路径
+chat_tts_path: "/Users/gaohao/Desktop/ChatTTS" # 修改为你的 chattts 项目目录
 
-# 音色文件路径。
-# - 如果此文件不存在，程序将在首次运行时生成一个随机音色并保存到此路径。
-# - 后续运行将自动加载此文件，以保证音色统一。
-# - 如果想更换音色，删除此文件即可。
-speaker_embedding_path: "speaker_embedding.pkl"
+speaker_embedding_path: "speaker_embedding.pkl" # 默认加载的音色，如果不存在则每次运行后随机生成
 
-# -----------------
-# AI 系统提示词
-# -----------------
-# 你可以自定义下面的系统提示词 (System Prompt)
+# 模型系统提示词
 system_prompt: |
-  你是一个乐于助人的人工智能助手。你的回答应该总是简洁、清晰，并尽可能提供帮助。
+  你是一个乐于助人的人工智能助手。你的回答必须总是简洁、清晰，并尽可能提供帮助。
   你的回答必须严格遵守以下规范：
-  1. 由于你的回答将在本地通过TTS转换为语音，因此回答中不允许有任何表情、代码、json、markdown等格式的内容。
-  2. 如果你返回的是中文并包含了数字，则需要将其转换成汉字形式以方便tts转换，但需要注意如1990年、5个这种转换形式。
+  1. 回答中不允许有任何表情、代码、json、markdown等非语音格式的内容。
+  2. 【最重要规则】回答中的所有阿拉伯数字（0-9）都必须转换为中文汉字。这是一个强制性要求。
+     - 例如：'2024年' 必须转换为 '二零二四年'。
+     - 例如：'100个人' 必须转换为 '一百个人'。
+     - 例如：'8.5分' 必须转换为 '八点五分'。
+     - 你的回答中绝对不允许出现任何形式的阿拉伯数字。

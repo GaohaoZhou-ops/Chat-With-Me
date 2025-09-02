@@ -1,3 +1,5 @@
+# tts_converter.py
+
 import ChatTTS
 import numpy as np
 import os
@@ -8,7 +10,8 @@ import time
 from config_loader import config
 import pickle
 
-NUM_WORKERS = 4
+# --- 配置从 config 文件读取 ---
+NUM_WORKERS = 2 
 MODEL_PATH = config['chat_tts_path']
 SPEAKER_EMB_PATH = config['speaker_embedding_path']
 
@@ -29,7 +32,7 @@ def convert_chunk(chat_instance, text_chunk, infer_params):
 
 def convert_text_to_audio(text_queue, audio_queue):
     """
-    使用线程池并行转换文本，并使用 pickle 正确地保存和加载音色。
+    修改后的逻辑：不再缓冲文本，收到任何文本块都立即处理。
     """
     print("ChatTTS 转换器正在启动...")
     
@@ -42,7 +45,7 @@ def convert_text_to_audio(text_queue, audio_queue):
         audio_queue.put(None)
         return
 
-    # 使用 pickle 加载或生成音色
+    # ... (加载或生成音色的代码保持不变) ...
     if os.path.exists(SPEAKER_EMB_PATH):
         try:
             with open(SPEAKER_EMB_PATH, 'rb') as f:
@@ -67,40 +70,32 @@ def convert_text_to_audio(text_queue, audio_queue):
         top_P=0.7,
         top_K=20
     )
-
-    sentence_buffer = []
+    
+    # --- 这是关键的逻辑修改 ---
+    # 不再使用 sentence_buffer 进行缓冲
     with concurrent.futures.ThreadPoolExecutor(max_workers=NUM_WORKERS) as executor:
         future_deque = deque()
         stop_signal_received = False
 
         while not stop_signal_received or future_deque:
-            if not stop_signal_received and len(future_deque) < NUM_WORKERS * 2:
+            # 1. 处理任务提交
+            if not stop_signal_received:
                 try:
-                    text = text_queue.get(timeout=0.2)
+                    # 使用超时来周期性地检查 future_deque
+                    text = text_queue.get(timeout=0.1)
                     if text is None:
                         stop_signal_received = True
-                        if sentence_buffer:
-                            text_to_speak = " ".join(sentence_buffer)
-                            print(f"\n[音频合成任务提交 - 结尾]: {text_to_speak}")
-                            future = executor.submit(convert_chunk, chat, text_to_speak, params_infer_code)
-                            future_deque.append(future)
-                            sentence_buffer.clear()
                     else:
-                        sentence_buffer.append(text.strip())
-                        if len(sentence_buffer) >= 2:
-                            text_to_speak = " ".join(sentence_buffer)
+                        text_to_speak = text.strip()
+                        if text_to_speak:
                             print(f"\n[音频合成任务提交]: {text_to_speak}")
                             future = executor.submit(convert_chunk, chat, text_to_speak, params_infer_code)
                             future_deque.append(future)
-                            sentence_buffer.clear()
                 except Empty:
-                    if sentence_buffer:
-                        text_to_speak = " ".join(sentence_buffer)
-                        print(f"\n[音频合成任务提交]: {text_to_speak}")
-                        future = executor.submit(convert_chunk, chat, text_to_speak, params_infer_code)
-                        future_deque.append(future)
-                        sentence_buffer.clear()
-
+                    # 队列为空是正常情况，继续执行下一步
+                    pass
+            
+            # 2. 处理已完成的任务
             if future_deque and future_deque[0].done():
                 future = future_deque.popleft()
                 try:
@@ -110,8 +105,10 @@ def convert_text_to_audio(text_queue, audio_queue):
                 except Exception as e:
                     print(f"!!! 获取任务结果时出错: {e}")
             else:
+                # 如果没有完成的任务，短暂休眠避免CPU空转
                 time.sleep(0.05)
             
+            # 3. 检查退出条件
             if stop_signal_received and not future_deque:
                 break
 

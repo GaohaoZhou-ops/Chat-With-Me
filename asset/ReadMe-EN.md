@@ -117,6 +117,8 @@ The project provides both terminal interaction and WebUI interaction. Use differ
 (chattts) $ python start_cli.py
 ```
 
+![cli](chattts-cli.png)
+
 * WebUI
 
 After startup, go to `http://127.0.0.1:7860/` through the browser to access:

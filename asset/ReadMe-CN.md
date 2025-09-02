@@ -117,6 +117,8 @@ system_prompt: |
 (chattts) $ python start_cli.py
 ```
 
+![cli](chattts-cli.png)
+
 * WebUI
 
 启动后通过浏览器前往 `http://127.0.0.1:7860/` 即可访问：

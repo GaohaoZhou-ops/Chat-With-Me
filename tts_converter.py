@@ -8,7 +8,7 @@ import time
 from config_loader import config
 import pickle
 
-NUM_WORKERS = 2 
+NUM_WORKERS = 4
 MODEL_PATH = config['chat_tts_path']
 SPEAKER_EMB_PATH = config['speaker_embedding_path']
 

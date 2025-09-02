@@ -83,7 +83,7 @@ with gr.Blocks(theme=gr.themes.Soft()) as demo:
     gr.Markdown("# 语音对话 Web UI")
     gr.Markdown("在下方的输入框中输入你的问题，点击发送或按回车。AI的回答将以文本形式显示，并自动转换为语音播放。")
 
-    chatbot = gr.Chatbot(label="对话历史", height=500, avatar_images=("./asset/avatar_user.png", "./asset/avatar_bot.jpg"))
+    chatbot = gr.Chatbot(label="对话历史", height=500, avatar_images=("./asset/icons/avatar_user.png", "./asset/icons/avatar_bot.jpg"))
     status_textbox = gr.Textbox(label="状态", interactive=False) # 将状态栏放在上面
 
     with gr.Row():

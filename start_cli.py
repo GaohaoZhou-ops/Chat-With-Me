@@ -25,7 +25,8 @@ if __name__ == "__main__":
     user_input_queue = mp.Queue()
     text_to_speech_queue = mp.Queue()
     audio_data_queue = mp.Queue()
-    player_command_queue = mp.Queue() # <--- 1. 添加命令队列
+    player_command_queue = mp.Queue()
+    tts_command_queue = mp.Queue()
 
     llm_process = None
     system_prompt = config['system_prompt']
@@ -51,7 +52,7 @@ if __name__ == "__main__":
     # TTS 转换进程
     tts_conversion_process = mp.Process(
         target=convert_text_to_audio, 
-        args=(text_to_speech_queue, audio_data_queue)
+        args=(text_to_speech_queue, audio_data_queue, tts_command_queue)
     )
     
     # 音频播放进程

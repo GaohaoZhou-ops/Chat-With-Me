@@ -17,8 +17,8 @@ SPEAKER_EMB_PATH = config['speaker_embedding_path']
 
 def convert_year_in_text(text):
     """
-    专门将文本中的四位数字年份转换为逐字朗读的中文格式。
-    例如: "1920年" -> "一九二零年"
+    更智能地将文本中的四位数字年份转换为逐字朗读的中文格式。
+    例如: "1920年" -> "一九二零年", "我出生于1995" -> "我出生于一九九五"
     """
     digit_map = {'0': '零', '1': '一', '2': '二', '3': '三', '4': '四', '5': '五', '6': '六', '7': '七', '8': '八', '9': '九'}
 
@@ -26,11 +26,19 @@ def convert_year_in_text(text):
         year_digits = match.group(1)
         # 将每个数字转换为对应的中文字符
         chinese_year = ''.join(digit_map[digit] for digit in year_digits)
-        return f"{chinese_year}年"
+        
+        # 检查原始匹配的末尾是否是 "年"，如果是，则在转换后的结果中也加上 "年"
+        if match.group(0).endswith('年'):
+            return f"{chinese_year}年"
+        else:
+            return chinese_year
 
-    # 使用正则表达式查找四位数字 + "年" 的模式
-    # \b 确保是单词边界，避免错误匹配如 "12345年" 中的 "2345年"
-    return re.sub(r'\b(\d{4})年\b', replace_year, text)
+    # 更新正则表达式：
+    # \b(\d{4})\b  -> 匹配独立的四位数字 (例如 "1995")
+    # (\d{4})年   -> 匹配后面跟着 "年" 的四位数字 (例如 "1995年")
+    # 使用 | (或) 将两种情况合并
+    # 使用非捕获组 (?:...) 来处理 "年" 的可选情况
+    return re.sub(r'\b(\d{4})(?:年)?\b', replace_year, text)
 
 def normalize_mixed_text(text):
     """

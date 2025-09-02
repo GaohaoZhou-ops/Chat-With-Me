@@ -3,20 +3,9 @@
 import multiprocessing as mp
 import sys
 from ollama_client import stream_ollama_response, stream_openai_response 
-# 导入修改后的转换器和新的播放器
 from tts_converter import convert_text_to_audio
 from audio_player import play_audio_data
-
-def get_openai_config():
-    base_url = "https://api.deepseek.com"
-    model_name = "deepseek-chat"
-    api_key = "sk-8352c67e63394c44b7401ea73d933d07"
-    return model_name, api_key, base_url
-
-def get_ollama_config():
-    print("\n--- 配置本地 Ollama 模型 ---")
-    model_name = input("请输入要使用的本地 Ollama 模型名称 (例如 qwen2:7b): ")
-    return model_name
+from config_loader import config # <--- 导入配置
 
 def main_input_loop(input_queue):
     """
@@ -33,38 +22,37 @@ def main_input_loop(input_queue):
             input_queue.put(line)
 
 if __name__ == "__main__":
-    choice = ""
-    while choice not in ["1", "2"]:
-        choice = input("请选择要使用的模型后端:\n1. 本地 Ollama\n2. 联网 OpenAI 协议模型\n请输入选项 (1 或 2): ")
-
-    # 创建两个队列用于进程间通信
+    # 创建队列
     user_input_queue = mp.Queue()
     text_to_speech_queue = mp.Queue()
-    # 新增一个音频数据队列
     audio_data_queue = mp.Queue()
 
     llm_process = None
+    system_prompt = config['system_prompt']
 
-    if choice == "1":
-        ollama_model_name = get_ollama_config()
-        llm_process = mp.Process(
-            target=stream_ollama_response, 
-            args=(user_input_queue, text_to_speech_queue, ollama_model_name)
-        )
-    else: # choice == "2"
-        model, key, url = get_openai_config()
+    # 根据配置文件决定启动哪个LLM进程
+    if config['use_online_model']:
+        print("--- 根据配置，启动联网 OpenAI 模型 ---")
+        online_config = config['online_model']
         llm_process = mp.Process(
             target=stream_openai_response, 
-            args=(user_input_queue, text_to_speech_queue, model, key, url)
+            args=(user_input_queue, text_to_speech_queue, online_config, system_prompt)
+        )
+    else:
+        print("--- 根据配置，启动本地 Ollama 模型 ---")
+        local_config = config['local_model']
+        llm_process = mp.Process(
+            target=stream_ollama_response, 
+            args=(user_input_queue, text_to_speech_queue, local_config, system_prompt)
         )
 
-    # 进程1: TTS 转换 (原 tts_process)
+    # TTS 转换进程
     tts_conversion_process = mp.Process(
         target=convert_text_to_audio, 
         args=(text_to_speech_queue, audio_data_queue)
     )
     
-    # 进程2: 音频播放
+    # 音频播放进程
     player_process = mp.Process(
         target=play_audio_data, 
         args=(audio_data_queue,)

@@ -1,5 +1,3 @@
-# tts_converter.py
-
 import ChatTTS
 import numpy as np
 import os
@@ -9,9 +7,8 @@ from collections import deque
 import time
 from config_loader import config
 import pickle
-import cn2an # <--- 1. 在这里导入 cn2an 库
+import cn2an
 
-# --- 配置从 config 文件读取 ---
 NUM_WORKERS = 2 
 MODEL_PATH = config['chat_tts_path']
 SPEAKER_EMB_PATH = config['speaker_embedding_path']
@@ -36,11 +33,9 @@ def convert_text_to_audio(text_queue, audio_queue):
     在将文本送入TTS模型前，先进行数字到汉字的转换。
     """
     print("ChatTTS 转换器正在启动...")
-    
-    # ... (模型加载和音色处理部分保持不变) ...
     try:
         chat = ChatTTS.Chat()
-        chat.load(custom_path=MODEL_PATH, compile=False)
+        chat.load(custom_path=MODEL_PATH, compile=True)
         print("ChatTTS 模型加载成功。")
     except Exception as e:
         print(f"初始化 ChatTTS 失败: {e}")
@@ -83,11 +78,9 @@ def convert_text_to_audio(text_queue, audio_queue):
                     if original_text is None:
                         stop_signal_received = True
                     else:
-                        # --- 2. 在这里执行数字转换 ---
                         text_to_speak = cn2an.transform(original_text.strip(), "an2cn")
                         
                         if text_to_speak:
-                            # 打印转换后的文本，方便调试
                             print(f"\n[音频合成任务提交]: {text_to_speak} (原始文本: {original_text.strip()})")
                             future = executor.submit(convert_chunk, chat, text_to_speak, params_infer_code)
                             future_deque.append(future)

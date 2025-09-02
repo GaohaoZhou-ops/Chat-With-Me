@@ -1,20 +1,15 @@
-# ollama_client.py
-
 import ollama
 import openai
 import re
-# cn2an 在此文件中不再需要，已被移除
 
 FIRST_CHUNK_MIN_LENGTH = 18
 MAX_CHARS_PER_CHUNK = 50
 
-# 函数签名现在不再需要 cn2an
 def _process_and_queue_text_chunk(text_chunk, text_queue, ui_queue):
     text_chunk = text_chunk.strip()
     if not text_chunk:
         return
 
-    # 直接将原始文本块放入队列
     def queue_chunk(chunk_to_queue):
         text_queue.put(chunk_to_queue)
         if ui_queue:
@@ -42,9 +37,6 @@ def _process_and_queue_text_chunk(text_chunk, text_queue, ui_queue):
     if current_chunk:
         queue_chunk(current_chunk.strip())
 
-# stream_ollama_response 和 stream_openai_response 函数内容无需改动，
-# 因为它们只是调用 _process_and_queue_text_chunk
-# 为方便您操作，此处提供完整文件内容
 
 def stream_ollama_response(input_queue, text_queue, local_model_config, system_prompt, ui_queue=None):
     model_name = local_model_config['name']

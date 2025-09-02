@@ -55,7 +55,7 @@ def handle_user_message(user_input, history):
     bot_response = ""
     while True:
         try:
-            update = ui_update_queue.get(timeout=20) # 延长超时
+            update = ui_update_queue.get(timeout=20)
             if update is None:
                 break
             bot_response += update
@@ -73,12 +73,9 @@ def terminate_and_clear_audio():
     终止当前播放并清空待播队列。
     """
     print("[WebUI]: 用户点击终止，发送CLEAR命令。")
-    # --- 这是唯一的修改点 ---
-    # 发送 "CLEAR" 命令来清空队列
     player_command_queue.put("CLEAR")
     return "已发送清空队列命令"
 
-# --- 构建 Gradio Web UI ---
 with gr.Blocks(theme=gr.themes.Soft()) as demo:
     gr.Markdown("# 语音对话 Web UI")
     gr.Markdown("在下方的输入框中输入你的问题，点击发送或按回车。AI的回答将以文本形式显示，并自动转换为语音播放。")

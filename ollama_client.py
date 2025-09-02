@@ -3,30 +3,30 @@
 import ollama
 import openai
 import re
-import cn2an
+# cn2an 在此文件中不再需要，已被移除
 
 FIRST_CHUNK_MIN_LENGTH = 18
 MAX_CHARS_PER_CHUNK = 50
 
+# 函数签名现在不再需要 cn2an
 def _process_and_queue_text_chunk(text_chunk, text_queue, ui_queue):
     text_chunk = text_chunk.strip()
     if not text_chunk:
         return
 
-    processed_chunk = cn2an.transform(text_chunk, "an2cn")
-    
+    # 直接将原始文本块放入队列
     def queue_chunk(chunk_to_queue):
         text_queue.put(chunk_to_queue)
         if ui_queue:
             ui_queue.put(chunk_to_queue)
 
-    if len(processed_chunk) <= MAX_CHARS_PER_CHUNK:
-        queue_chunk(processed_chunk)
+    if len(text_chunk) <= MAX_CHARS_PER_CHUNK:
+        queue_chunk(text_chunk)
         return
 
-    print(f"\n[文本切分]: 检测到长句 (长度 {len(processed_chunk)} > {MAX_CHARS_PER_CHUNK})...")
+    print(f"\n[文本切分]: 检测到长句 (长度 {len(text_chunk)} > {MAX_CHARS_PER_CHUNK})...")
     
-    parts = re.split(r'([，；,;])', processed_chunk)
+    parts = re.split(r'([，；,;])', text_chunk)
     current_chunk = ""
     for i in range(0, len(parts), 2):
         part = parts[i]
@@ -41,6 +41,10 @@ def _process_and_queue_text_chunk(text_chunk, text_queue, ui_queue):
     
     if current_chunk:
         queue_chunk(current_chunk.strip())
+
+# stream_ollama_response 和 stream_openai_response 函数内容无需改动，
+# 因为它们只是调用 _process_and_queue_text_chunk
+# 为方便您操作，此处提供完整文件内容
 
 def stream_ollama_response(input_queue, text_queue, local_model_config, system_prompt, ui_queue=None):
     model_name = local_model_config['name']
@@ -86,8 +90,6 @@ def stream_ollama_response(input_queue, text_queue, local_model_config, system_p
         if full_sentence.strip():
             _process_and_queue_text_chunk(full_sentence, text_queue, ui_queue)
         
-        # --- 修正点 ---
-        # 确保在流结束后才发送 None 信号
         if ui_queue:
             ui_queue.put(None)
         print()
@@ -146,8 +148,6 @@ def stream_openai_response(input_queue, text_queue, online_model_config, system_
         if full_sentence.strip():
             _process_and_queue_text_chunk(full_sentence, text_queue, ui_queue)
         
-        # --- 修正点 ---
-        # 确保在流结束后才发送 None 信号
         if ui_queue:
             ui_queue.put(None)
         print()

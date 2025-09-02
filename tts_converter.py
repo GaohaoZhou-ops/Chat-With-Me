@@ -1,5 +1,3 @@
-# tts_converter.py
-
 import ChatTTS
 import numpy as np
 import os
@@ -12,33 +10,53 @@ import pickle
 import cn2an
 import re
 
+
 NUM_WORKERS = 2 
 MODEL_PATH = config['chat_tts_path']
 SPEAKER_EMB_PATH = config['speaker_embedding_path']
+
+def convert_year_in_text(text):
+    """
+    专门将文本中的四位数字年份转换为逐字朗读的中文格式。
+    例如: "1920年" -> "一九二零年"
+    """
+    digit_map = {'0': '零', '1': '一', '2': '二', '3': '三', '4': '四', '5': '五', '6': '六', '7': '七', '8': '八', '9': '九'}
+
+    def replace_year(match):
+        year_digits = match.group(1)
+        # 将每个数字转换为对应的中文字符
+        chinese_year = ''.join(digit_map[digit] for digit in year_digits)
+        return f"{chinese_year}年"
+
+    # 使用正则表达式查找四位数字 + "年" 的模式
+    # \b 确保是单词边界，避免错误匹配如 "12345年" 中的 "2345年"
+    return re.sub(r'\b(\d{4})年\b', replace_year, text)
+
+def normalize_mixed_text(text):
+    """
+    在中英文、数字之间添加空格，并特殊处理大写缩写词，以优化ChatTTS的处理效果。
+    例如："OLED电视" -> "O L E D 电视"
+    """
+    # 使用正则表达式切分文本，保留英文、数字和特定符号的组合
+    parts = re.split(r'([a-zA-Z0-9\s\'._-]+)', text)
+    
+    processed_parts = []
+    for part in parts:
+        if not part:
+            continue
+        # 条件：完全由2个或以上大写英文字母组成
+        if re.fullmatch(r'[A-Z]{2,}', part.strip()):
+            # 是缩写词，展开为 "L E D" 的形式
+            processed_parts.append(" ".join(part.strip()))
+        else:
+            processed_parts.append(part)
+    # 重新组合，并清理多余的空格
+    return ' '.join(processed_parts).replace('  ', ' ')
 
 def _clear_queue(q):
     while not q.empty():
         try: q.get_nowait()
         except Empty: break
-
-def normalize_mixed_text(text):
-    """
-    在中英文、数字之间添加空格，以优化ChatTTS的处理效果。
-    """
-    # 正则表达式：匹配任何非中文、非字母、非数字的字符，以及字母和数字序列
-    # \u4e00-\u9fa5 : 中文字符范围
-    # a-zA-Z0-9 : 字母和数字
-    # [^\u4e00-\u9fa5a-zA-Z0-9] : 匹配所有不是中文、字母、数字的字符 (例如标点)
-    # ([a-zA-Z0-9\s'._-]+) : 匹配连续的英文、数字、空格和一些特殊字符，形成一个单词/词组
-    parts = re.split(r'([a-zA-Z0-9\s\'._-]+)', text)
-    
-    # 过滤掉空的字符串
-    parts = [p for p in parts if p]
-    
-    # 重新组合，确保每个部分之间有空格
-    # 如果一个部分是中文，而下一个部分是英文/数字，它们之间会被一个空格隔开
-    return ' '.join(parts).replace('  ', ' ') # 替换多余的空格
-
 
 def convert_text_to_audio(text_queue, audio_queue, command_queue):
     print("ChatTTS 转换器正在启动...")
@@ -86,8 +104,15 @@ def convert_text_to_audio(text_queue, audio_queue, command_queue):
                     if original_text is None:
                         stop_signal_received = True
                     else:
+                        # 1. 标准化文本，在中英文之间添加空格
                         normalized_text = normalize_mixed_text(original_text.strip())
-                        text_to_speak = cn2an.transform(normalized_text, "an2cn")
+                        
+                        # 2. 优先处理文本中的年份
+                        text_with_years_converted = convert_year_in_text(normalized_text)
+                        
+                        # 3. 对处理完年份的文本进行其余的数字转换
+                        text_to_speak = cn2an.transform(text_with_years_converted, "an2cn")
+
                         if text_to_speak:
                             print(f"\n[音频合成任务提交]: {text_to_speak} (原始文本: {original_text.strip()})")
                             future = executor.submit(chat.infer, [text_to_speak], params_infer_code=params_infer_code)
@@ -100,11 +125,9 @@ def convert_text_to_audio(text_queue, audio_queue, command_queue):
                 try:
                     wavs = future.result()
                     
-                    # --- 这里是新增的诊断日志 ---
                     print(f"[TTS DEBUG]: 转换任务完成。返回结果类型: {type(wavs)}")
                     if isinstance(wavs, (list, tuple)):
                         print(f"[TTS DEBUG]: 返回结果是一个列表/元组，长度为: {len(wavs)}")
-                    # ---------------------------
                     
                     if isinstance(wavs, (list, tuple)) and len(wavs) > 0:
                         audio_data = np.array(wavs[0])

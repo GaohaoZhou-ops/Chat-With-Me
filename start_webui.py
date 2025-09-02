@@ -1,16 +1,12 @@
-# start_webui.py
-
 import gradio as gr
 import multiprocessing as mp
 import queue
-import threading
 
 from ollama_client import stream_ollama_response, stream_openai_response 
 from tts_converter import convert_text_to_audio
 from audio_player import play_audio_data
 from config_loader import config
 
-# --- 全局队列 ---
 user_input_queue = mp.Queue()
 text_to_speech_queue = mp.Queue()
 audio_data_queue = mp.Queue()
@@ -51,14 +47,12 @@ def handle_user_message(user_input, history):
         return history, "请输入内容后再发送"
 
     print(f"[WebUI]: 收到用户输入: {user_input}")
-    # 清理可能存在的旧更新
     while not ui_update_queue.empty():
         try:
             ui_update_queue.get_nowait()
         except queue.Empty:
             continue
 
-    # --- 2. 修改点: 使用新的字典格式追加历史记录 ---
     history.append({"role": "user", "content": user_input})
     history.append({"role": "assistant", "content": ""})
     
@@ -97,7 +91,6 @@ with gr.Blocks(theme=gr.themes.Soft()) as demo:
     gr.Markdown("# 语音对话 Web UI")
     gr.Markdown("在下方的输入框中输入你的问题，点击发送或按回车。AI的回答将以文本形式显示，并自动转换为语音播放。")
 
-    # --- 1. 修改点: 为Chatbot指定 type='messages' ---
     chatbot = gr.Chatbot(
         label="对话历史", 
         height=500, 

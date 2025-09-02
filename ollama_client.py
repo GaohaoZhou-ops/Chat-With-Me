@@ -60,6 +60,10 @@ def stream_ollama_response(input_queue, text_queue, local_model_config, system_p
             for chunk in stream:
                 content = chunk['message']['content']
                 if content:
+                    content = re.sub(r'<think>.*?</think>', '', content, flags=re.DOTALL)
+                    if not content:
+                        continue
+                    
                     print(content, end="", flush=True)
                     full_sentence += content
 
@@ -118,6 +122,12 @@ def stream_openai_response(input_queue, text_queue, online_model_config, system_
             for chunk in stream:
                 content = chunk.choices[0].delta.content
                 if content:
+                    # 新增代码：使用正则表达式过滤掉 <think> 标签及其内容
+                    content = re.sub(r'<think>.*?</think>', '', content, flags=re.DOTALL)
+
+                    if not content: # 如果过滤后内容为空，则跳过本次循环
+                        continue
+                    
                     print(content, end="", flush=True)
                     full_sentence += content
                     

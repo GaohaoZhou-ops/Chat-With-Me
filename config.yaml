@@ -14,7 +14,7 @@ local_model:
 
 chat_tts_path: "/Users/gaohao/Desktop/ChatTTS" # 修改为你的 chattts 项目目录
 
-speaker_embedding_path: "speaker_embedding.pkl" # 默认加载的音色，如果不存在则每次运行后随机生成
+speaker_embedding_path: "./asset/speaker_embedding.pkl" # 默认加载的音色，如果不存在则每次运行后随机生成
 
 # 模型系统提示词
 system_prompt: |

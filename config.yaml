@@ -6,7 +6,7 @@ use_online_model: true  # 是否使用在线模型 (true: 使用在线OpenAI协�
 
 online_model:
   name: "deepseek-chat"
-  api_key: "sk-8352c67e63394c44b7401ea73d933d07"
+  api_key: "Your API Key"
   base_url: "https://api.deepseek.com"
 
 local_model:

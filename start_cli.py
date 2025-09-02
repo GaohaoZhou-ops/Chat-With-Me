@@ -1,5 +1,6 @@
 import multiprocessing as mp
 import sys
+
 from ollama_client import stream_ollama_response, stream_openai_response 
 from tts_converter import convert_text_to_audio
 from audio_player import play_audio_data
@@ -24,9 +25,12 @@ if __name__ == "__main__":
     user_input_queue = mp.Queue()
     text_to_speech_queue = mp.Queue()
     audio_data_queue = mp.Queue()
+    player_command_queue = mp.Queue() # <--- 1. 添加命令队列
 
     llm_process = None
     system_prompt = config['system_prompt']
+    
+    ui_update_queue = None 
 
     # 根据配置文件决定启动哪个LLM进程
     if config['use_online_model']:
@@ -34,14 +38,14 @@ if __name__ == "__main__":
         online_config = config['online_model']
         llm_process = mp.Process(
             target=stream_openai_response, 
-            args=(user_input_queue, text_to_speech_queue, online_config, system_prompt)
+            args=(user_input_queue, text_to_speech_queue, online_config, system_prompt, ui_update_queue)
         )
     else:
         print("--- 根据配置，启动本地 Ollama 模型 ---")
         local_config = config['local_model']
         llm_process = mp.Process(
             target=stream_ollama_response, 
-            args=(user_input_queue, text_to_speech_queue, local_config, system_prompt)
+            args=(user_input_queue, text_to_speech_queue, local_config, system_prompt, ui_update_queue)
         )
 
     # TTS 转换进程
@@ -53,7 +57,7 @@ if __name__ == "__main__":
     # 音频播放进程
     player_process = mp.Process(
         target=play_audio_data, 
-        args=(audio_data_queue,)
+        args=(audio_data_queue, player_command_queue)
     )
 
     # 启动所有后台进程

@@ -105,7 +105,7 @@ Your answer must strictly adhere to the following guidelines:
 - For example: '100人' must be converted to '一百人'.
 - For example: '8.5分' must be converted to '八点五分'.
 - Arabic numerals of any kind are strictly prohibited in your answer.
-
+```
 
 ----
 # Step 4. Run
@@ -118,6 +118,10 @@ The project provides both terminal interaction and WebUI interaction. Use differ
 ```
 
 * WebUI
+
+After startup, go to `http://127.0.0.1:7860/` through the browser to access:
 ```bash
 (chattts) $ python start_webui.py
 ```
+
+![webui](chat-webui.png)

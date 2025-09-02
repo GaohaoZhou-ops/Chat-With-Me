@@ -118,6 +118,10 @@ system_prompt: |
 ```
 
 * WebUI
+
+启动后通过浏览器前往 `http://127.0.0.1:7860/` 即可访问：
 ```bash
 (chattts) $ python start_webui.py
 ```
+
+![webui](chat-webui.png)

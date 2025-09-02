@@ -4,8 +4,8 @@ This repository implements the function of converting LLM return text into audio
 
 这个仓库实现了将LLM返回文本使用 ChatTTS 转换为音频的功能。你可以点击下面的视频链接查看我们的演示示例，我们提供了终端交互和WebUI交互的两种形式。
 
-* CLI：[]()
-* WebUI：[]()
+* CLI：[终端交互](https://www.bilibili.com/video/BV1EUaFzaEXo/?spm_id_from=333.1387.collection.video_card.click&vd_source=c8dbe5ab3b4bf743fae13d455b4aa039)
+* WebUI：[WebUI交互](https://www.bilibili.com/video/BV17DaFzcEq7/?spm_id_from=333.1387.collection.video_card.click&vd_source=c8dbe5ab3b4bf743fae13d455b4aa039)
 
 We provide the following language versions of the ReadMe file to help you quickly familiarize yourself with this project. Click the hyperlink below to jump:
 
@@ -25,3 +25,8 @@ The hardware and testing facilities for this project were provided by the `Insti
 
 [WenJiang Xu 徐文江](https://github.com/HEA1OR)，[PengFei Yi 易鹏飞](https://github.com/alfie010)，[JingKai Xu 徐靖凯](https://github.com/Triumphant-strain)，[XingYu Wang 王行宇](https://github.com/xywang227)，[YaNan Hao 郝亚楠](https://github.com/haoyanan2024)，[YuWei Wang 王雨薇](https://github.com/YuweiWang2002)
 
+
+---
+# ToDo
+
+* Add agents to chat.

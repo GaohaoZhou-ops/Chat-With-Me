@@ -1,1 +1,5 @@
 cn2an
+sounddevice
+pyyaml
+ollama
+openai
